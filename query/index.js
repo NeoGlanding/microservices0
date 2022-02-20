@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require('cors');
 const {randomBytes} = require('crypto');
+const axios = require("axios");
 
 const app = express();
 
@@ -9,15 +10,7 @@ app.use(cors());
 
 const posts = {};
 
-app.get('/posts', (req, res) => {
-    res.status(200).json(posts)
-});
-
-app.post('/events', (req, res) => {
-    let {type, data} = req.body;
-
-    console.log(type, data)
-
+const eventHandler = (type, data) => {
     if (type === 'Post Created') {
         const {id, title} = data;
 
@@ -39,8 +32,34 @@ app.post('/events', (req, res) => {
 
         post.comments[index].status = status
     }
+}
+
+app.get('/posts', (req, res) => {
+    res.status(200).json(posts)
+});
+
+app.post('/events', (req, res) => {
+    let {type, data} = req.body;
+
+    console.log(type, data)
+
+    eventHandler(type, data)
 
     res.send({})
 })
 
-app.listen(4002, () => console.log('Running at port 4002'))
+app.listen(4002, async () => {
+    try {
+        console.log('Running at port 4002');
+
+        let {data: events} = await axios.get('http://localhost:4005/events');
+
+        for (ev of events) {
+            console.log('Processing event ', ev.type)
+            eventHandler(ev.type, ev.data)
+        }
+
+    } catch (error) {
+        console.log(error)
+    }
+})
