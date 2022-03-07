@@ -14,6 +14,7 @@ app.get('/posts', async (req, res, next) => {
    try {
      res.status(200).json({
          message: 'success',
+         DEV_LOG: 'Running at NodePort Kubernetes',
          posts
      })
    } catch(err) {
@@ -62,4 +63,7 @@ app.post('/events', async (req, res) => {
     res.send({})
 })
 
-app.listen(4000, () => console.log('Running at port 4000'))
+app.listen(4000, () => {
+    console.log('Post Service v1.4: Running on Kube Deployment')
+    console.log('Running at port 4000')
+})
